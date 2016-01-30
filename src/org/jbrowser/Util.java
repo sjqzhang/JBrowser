@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
@@ -165,6 +166,64 @@ public class Util {
 	}
 	
 	
+	public static String getHtml(String url){
+		
+		String result="";
+		
+		
+		try {
+		
+		WebClient client= new WebClient(BrowserVersion.FIREFOX_38);
+		
+		client.getOptions().setJavaScriptEnabled(false);
+		client.getOptions().setCssEnabled(false);
+		
+		HtmlPage html= client.getPage(url);
+		
+		String xml=html.asXml();
+		Pattern pcharset=Pattern.compile("\\<\\?xml version=\"1.0\" encoding=\"([^\"]+?)\"\\?\\>");
+		
+		Matcher cm = pcharset.matcher(xml);
+		String charset="UTF-8";
+		if(cm.find()){
+//			System.out.println("++++++++++++++++++"+cm.group(1));
+			charset=cm.group(1);
+		}
+		
+		Pattern pattern=Pattern.compile("<html[\\s\\S]+?>[\\s\\S]+?<\\/html>", Pattern.CASE_INSENSITIVE);
+		
+		Matcher match = pattern.matcher(xml);
+		if(match.find()){
+			result= match.group();
+			result=result.replaceAll("CHARSET=[^\"]+?\"", "charset=utf-8\"");
+			result=result.replaceAll("charset=[^\"]+?\"", "charset=utf-8\"");
+			result=result.replaceAll("charset=\"[^\"]+?\"", "charset=\"utf-8\"");
+			
+			result= new String( result.getBytes(),"UTF-8");
+			
+		}
+		}catch (Exception e) {
+			e.printStackTrace();
+			return "error"+ e.toString();
+			
+		}
+		return result;
+	}
+	
+	
+	public static String trimScript(String html) {
+		
+		
+		html= html.replaceAll("<script[\\s\\S]+?>[\\s\\S]+?<\\/script>", "");
+
+		html= html.replaceAll("<style[\\s\\S]+?>[\\s\\S]+?<\\/style>", "");
+		
+		return html;
+		
+		
+	}
+	
+	
 	public static String loadPageSimple(String url,String jscode,int timeout){
 		
 		try {
@@ -178,19 +237,10 @@ public class Util {
 		
 		FileOutputStream writeFile = new FileOutputStream(file); 
 
-		String html =""+doGet(url, new HashMap<String,String>(), "utf-8");
+		String html =""+getHtml(url);
 		
-//		String html="<html><head></head><body>sadfasdfa</body><html>";
-		
-		Pattern pattern =Pattern.compile("<script[\\s\\S]+?>[\\s\\S]+?<\\/script>",Pattern.CASE_INSENSITIVE);
-		
-	
-		html= html.replaceAll("<script[\\s\\S]+?>[\\s\\S]+?<\\/script>", "");
+		html=trimScript(html);
 
-		html= html.replaceAll("<style[\\s\\S]+?>[\\s\\S]+?<\\/style>", "");
-		
-		System.out.println(html);
-		
 		writeFile.write(html.getBytes());
 		
 		writeFile.flush();

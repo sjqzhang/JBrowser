@@ -156,7 +156,18 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		
 		
+//		System.out.println(Util.getHtml("http://www.sse.com.cn/market/overview/"));
+		
+		
 //		WebClient client= new WebClient(BrowserVersion.FIREFOX_38);
+//		
+//		client.getOptions().setJavaScriptEnabled(false);
+//		client.getOptions().setCssEnabled(false);
+//		
+//		HtmlPage html= client.getPage("http://www.sse.com.cn/market/overview/");
+//		
+//		System.out.println(html.asXml());
+		
 //		
 //		File file=File.createTempFile("JBrowser", ".html");
 //		
@@ -186,7 +197,7 @@ public class Main {
 //		
 //		
 //	
-		
+//		
 		init(args);
 		
 //		client.getp

@@ -3,7 +3,7 @@ function table_data(selector) {
 	$('table tr', $(selector)).each(function() {
 		var row = []
 		$('td,th', $(this)).each(function() {
-			row.push($(this).text())
+			row.push($.trim($(this).text()))
 		})
 		data.push(row)
 	})
@@ -21,7 +21,7 @@ function href_data(selector) {
 	$('a', $(selector)).each(function() {
 
 		var href = $(this).attr('href');
-		var title = $(this).text()
+		var title = $.trim($(this).text()) 
 		data.push({
 			href : href,
 			title : title
