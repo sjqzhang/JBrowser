@@ -10,9 +10,7 @@
 
 package org.jbrowser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,37 +29,37 @@ public class Main {
 
 	public static class RedirectHandler extends AbstractHandler {
 		
-		private static String getFile(InputStream input) throws IOException {
-
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			int len = 0;
-			byte[] b = new byte[1024];
-			while ((len = input.read(b)) > 0) {
-				os.write(b, 0, len);
-			}
-			return os.toString("utf-8");
-
-		}
-		
-		private static String getResources(String name){
-			
-			String basepath="/org/jbrowser/resources/";
-			
-		  try {
-			return getFile(Main.class.getResourceAsStream(basepath + name));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e);
-			e.printStackTrace();
-			return "";
-		}
-		  
-		}
+//		private static String getFile(InputStream input) throws IOException {
+//
+//			ByteArrayOutputStream os = new ByteArrayOutputStream();
+//			int len = 0;
+//			byte[] b = new byte[1024];
+//			while ((len = input.read(b)) > 0) {
+//				os.write(b, 0, len);
+//			}
+//			return os.toString("utf-8");
+//
+//		}
+//		
+//		private static String getResources(String name){
+//			
+//			String basepath="/org/jbrowser/resources/";
+//			
+//		  try {
+//			return getFile(Main.class.getResourceAsStream(basepath + name));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			System.out.println(e);
+//			e.printStackTrace();
+//			return "";
+//		}
+//		  
+//		}
 
 
 		public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
 
-			System.out.println(target);
+//			System.out.println(target);
 
 			response.setContentType("text/html;charset=UTF-8");
 
@@ -77,10 +75,18 @@ public class Main {
 				} catch (Exception e) {
 
 				}
+//				System.out.println(request.getParameter("url"));
+				LogManager.getLogger(getClass()).info(request.getParameter("url"));
+				
 				if (type == null || type.equalsIgnoreCase("0")) {
+				
 					content = Util.loadPage(request.getParameter("url"), request.getParameter("jscode"), timeout); 
+				} else if (type.equalsIgnoreCase("2")){
+					
+					content = Util.loadPageSimple(request.getParameter("url"), request.getParameter("jscode"), timeout); 
+					
 				} else {
-					content = Util.loadPage2(request.getParameter("url"), request.getParameter("jscode"), timeout);
+					content = Util.loadPageWithGlobalClient(request.getParameter("url"), request.getParameter("jscode"), timeout);
 				}
 				
 				
@@ -90,15 +96,15 @@ public class Main {
 				}
 				
 			} else if (target.endsWith(".html")) {
-//				content = Util.getResources("index.html");
-				content = getResources("index.html");
+				content = Util.getResources("index.html");
+//				content = getResources("index.html");
 			} else if (target.endsWith(".js")) {
 				response.setContentType("text/javascript;charset=UTF-8");
-//				content = Util.getResources("jquery.js");
-				content = getResources("jquery.js");
+				content = Util.getResources("jquery.js");
+//				content = getResources("jquery.js");
 			} else {
-//				content = Util.getResources("index.html");
-				content = getResources("index.html");
+				content = Util.getResources("index.html");
+//				content = getResources("index.html");
 			}
 			response.getWriter().write(content);
 
@@ -115,15 +121,11 @@ public class Main {
 		builder.append(" -port 6666 \r\n");
 		System.out.println(builder.toString());
 	}
-
-	public static void main(String[] args) throws Exception {
-		
-		
 	
+	
+	public static void init(String[] args)throws Exception{
+		
 		int port = 6666;
-
-
-
 		int len = args.length;
 		int pos = 0;
 		while (pos < len) {
@@ -135,10 +137,7 @@ public class Main {
 			} else {
 				++pos;
 			}
-		}
-
-
-				
+		}	
 		Server server = new Server(port);
 
 		ResourceHandler fileHandler = new ResourceHandler();
@@ -152,5 +151,48 @@ public class Main {
 		server.start();
 		server.join();
 
+	}
+
+	public static void main(String[] args) throws Exception {
+		
+		
+//		WebClient client= new WebClient(BrowserVersion.FIREFOX_38);
+//		
+//		File file=File.createTempFile("JBrowser", ".html");
+//		
+//		FileOutputStream writeFile = new FileOutputStream(file); 
+//		
+//		String html="<html><head></head><body>sadfasdfa</body><html>";
+//		
+//		
+//		writeFile.write(html.getBytes());
+//		
+//		writeFile.flush();
+//		
+//		URL url=new URL("file:///"+file.getPath());
+//		
+////		System.out.println(file.getPath());
+//		
+//		HtmlPage page= client.getPage(url);
+//		
+//		System.out.println(page.asXml());
+//		
+//		
+////		url.getContent()
+//		
+//		
+//		
+//		System.out.println(file.getPath());
+//		
+//		
+//	
+		
+		init(args);
+		
+//		client.getp
+		
+//		System.out.println( Util.loadPageSimple("http://www.baidu.com", "", 0));
+		
+		
 	}
 }

@@ -11,24 +11,28 @@
 package org.jbrowser;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import net.sourceforge.htmlunit.corejs.javascript.Function;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -56,7 +60,12 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class Util {
 
-	static WebClient gwebClient = new WebClient(BrowserVersion.FIREFOX_38);
+	static WebClient gwebClient = getClient();
+	
+//	static DefaultHttpClient  httpClient = new DefaultHttpClient();
+	
+	static  CookieStore cookieStore =new BasicCookieStore();;
+
 
 	static {
 		gwebClient.getOptions().setCssEnabled(false);
@@ -66,7 +75,11 @@ public class Util {
 		gwebClient.setAjaxController(new NicelyResynchronizingAjaxController());
 
 		gwebClient.getCookieManager().setCookiesEnabled(true);
+		
+		
 	}
+	
+
 	
 	public  static String getFile(InputStream input) throws IOException {
 
@@ -93,19 +106,9 @@ public class Util {
 	}
 	  
 	}
-	public static String getResources2(String name) {
-		try {
-
-
-		
-			InputStream ins = new FileInputStream(name);
-			byte[] b = new byte[ins.available()];
-			ins.read(b);
-			return new String(b);
-		} catch (Exception e) {
-			System.out.println(e);
-			return "";
-		}
+	public static InputStream getResources2(String name) {
+		String basepath="/org/jbrowser/resources/";
+		  return (Main.class.getResourceAsStream(basepath + name));
 
 	}
 	
@@ -123,9 +126,7 @@ public class Util {
 	private static String load(WebClient webClient, String url, String jscode, int timeout) {
 
 		try {
-			webClient.getOptions().setCssEnabled(false);
 
-			webClient.getOptions().setJavaScriptEnabled(true);
 
 			webClient.setAjaxController(new NicelyResynchronizingAjaxController());
 
@@ -156,37 +157,100 @@ public class Util {
 
 			return obj.toString();
 		} catch (Exception e) {
-
-			return e.toString();
+			e.printStackTrace();
+			return "error:"+e.toString();
 
 		}
 
 	}
-
 	
-		 
-		 /**
-		 * <b>创建人：</b>张军强<br/>
-		 * Function<br/>
-		 *<b>方法描述：</b> <br/>
-		 * @return 
-		 * Function
-		 * @exception 
-		 * @since  1.0.0
-		 */
+	
+	public static String loadPageSimple(String url,String jscode,int timeout){
 		
-	private static Function Function() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
+		
+		webClient.getOptions().setJavaScriptEnabled(true);
+		webClient.getOptions().setCssEnabled(false);
+		
+
+		File file=File.createTempFile("JBrowser", ".html");
+		
+		FileOutputStream writeFile = new FileOutputStream(file); 
+
+		String html =""+doGet(url, new HashMap<String,String>(), "utf-8");
+		
+//		String html="<html><head></head><body>sadfasdfa</body><html>";
+		
+		Pattern pattern =Pattern.compile("<script[\\s\\S]+?>[\\s\\S]+?<\\/script>",Pattern.CASE_INSENSITIVE);
+		
+	
+		html= html.replaceAll("<script[\\s\\S]+?>[\\s\\S]+?<\\/script>", "");
+
+		html= html.replaceAll("<style[\\s\\S]+?>[\\s\\S]+?<\\/style>", "");
+		
+		System.out.println(html);
+		
+		writeFile.write(html.getBytes());
+		
+		writeFile.flush();
+		
+		URL fileurl=new URL("file:///"+file.getPath());
+		
+		HtmlPage page= webClient.getPage(fileurl);
+		
+		page.executeJavaScript(getResources("jquery2.2.js"));
+
+		page.executeJavaScript(getResources("util.js"));
+		
+		Object obj = null;
+
+		if (!isEmpty(jscode)) {
+			
+
+			obj = page.executeJavaScript(jscode).getJavaScriptResult();
+			
+
+		} else {
+
+			obj = page.asXml();
+		}
+
+		return obj.toString();
+		
+		}catch (Exception e) {
+			// TODO: handle exception
+			
+			return "error:"+e.toString();
+
+		}
+		
+		
+
+		
 	}
 
-	public static String loadPage2(String url, String jscode, int timeout) {
+	
+
+
+	public static String loadPageWithGlobalClient(String url, String jscode, int timeout) {
 		String result = load(gwebClient, url, jscode, timeout);
 		return result;
 	}
+	
+	public static WebClient getClient(){
+		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
+		webClient.getOptions().setCssEnabled(false);
+		webClient.getOptions().setJavaScriptEnabled(true);
+		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+		webClient.getOptions().setThrowExceptionOnScriptError(false);
+		return webClient;
+		
+	}
 
 	public static String loadPage(String url, String jscode, int timeout) {
-		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
+		
+		WebClient webClient= getClient();
 		webClient.setCookieManager(gwebClient.getCookieManager());
 		String result = load(webClient, url, jscode, timeout);
 		webClient.close();
@@ -202,13 +266,16 @@ public class Util {
 	}
 
 	public static String doPost(String url, Map<String, String> map,String charset) {
-		HttpClient httpClient = null;
+		DefaultHttpClient httpClient = null;
 		HttpPost httpPost = null;
 		String result = null;
 //		String charset="utf-8";
 		try {
 			httpClient = new DefaultHttpClient();
 			httpPost = new HttpPost(url);
+			
+			
+			
 			// 设置参数
 			List<NameValuePair> list = new ArrayList<NameValuePair>();
 			Iterator iterator = map.entrySet().iterator();
@@ -220,7 +287,65 @@ public class Util {
 				UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list, charset);
 				httpPost.setEntity(entity);
 			}
+			
+			httpClient.setCookieStore(cookieStore);
+			
 			HttpResponse response = httpClient.execute(httpPost);
+			
+			cookieStore=httpClient.getCookieStore();
+			
+			if (response != null) {
+				HttpEntity resEntity = response.getEntity();
+				if (resEntity != null) {
+					result = EntityUtils.toString(resEntity, charset);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return result;
+	}
+
+	
+	public static String doGet(String url,Map<String, String> map,String charset) {
+		DefaultHttpClient httpClient = null;
+		HttpPost httpPost = null;
+		String result = null;
+//		String charset="utf-8";
+		try {
+			httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(url);	
+			httpget.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0");
+			
+			
+			
+			
+			List params=new ArrayList<NameValuePair>();
+			List<NameValuePair> list = new ArrayList<NameValuePair>();
+			Iterator iterator = map.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Entry<String, String> elem = (Entry<String, String>) iterator.next();
+				params.add(new BasicNameValuePair(elem.getKey(), elem.getValue()));
+			}
+			String str = EntityUtils.toString(new UrlEncodedFormEntity(params,"UTF-8"));
+			if (params.size()==0) {
+				str = "";
+			}
+			if (httpget.getURI().toString().indexOf("?") != -1) {
+				httpget.setURI(new URI(httpget.getURI().toString() + "&" + str));
+			} else {
+				httpget.setURI(new URI(httpget.getURI().toString() + "?" + str));
+			}
+			
+
+			
+			
+			httpClient.setCookieStore(cookieStore);
+			
+			HttpResponse response = httpClient.execute(httpget);
+			
+			cookieStore=httpClient.getCookieStore();
+			
 			if (response != null) {
 				HttpEntity resEntity = response.getEntity();
 				if (resEntity != null) {
