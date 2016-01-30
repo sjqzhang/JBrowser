@@ -245,7 +245,7 @@ public class Util {
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
 		return webClient;
-		
+
 	}
 
 	public static String loadPage(String url, String jscode, int timeout) {
@@ -348,6 +348,7 @@ public class Util {
 			
 			if (response != null) {
 				HttpEntity resEntity = response.getEntity();
+			
 				if (resEntity != null) {
 					result = EntityUtils.toString(resEntity, charset);
 				}

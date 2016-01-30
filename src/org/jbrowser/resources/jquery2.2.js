@@ -1,7 +1,5 @@
 
-
-
-if(typeof jQuery=='undefined') {
+if(typeof jQuery=='undefined'||true) {
 	
 /*!
  * jQuery JavaScript Library v2.0.3

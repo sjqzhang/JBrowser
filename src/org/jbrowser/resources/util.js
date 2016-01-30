@@ -10,6 +10,7 @@ function table_data(selector) {
 	return data
 }
 
+
 function obj2json(data) {
 	return JSON.stringify(data)
 }
@@ -80,4 +81,54 @@ function print(obj){
 	return json_encode(obj)
 	
 }
+
+
+function __http_request(method,url,data,callback){
+
+       $.ajax({
+                url : url,
+                data:data,
+                cache : false, 
+                async : false,
+                type : method,
+                dataType : 'html', 
+                success : function (result){
+                    return callback(result)
+                }
+            });
+}
+
+
+function http_post(url,data,callback){
+	if(typeof data=='function'){
+		callback=data
+		data={}
+	}
+	return __http_request('POST',url,data,callback)
+}
+
+function http_get(url,data,callback){ 
+	if(typeof data=='function'){
+		callback=data
+		data={}
+	}
+	return __http_request('GET',url,data,callback);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
