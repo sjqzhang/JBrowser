@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -180,28 +178,8 @@ public class Util {
 		
 		HtmlPage html= client.getPage(url);
 		
-		String xml=html.asXml();
-		Pattern pcharset=Pattern.compile("\\<\\?xml version=\"1.0\" encoding=\"([^\"]+?)\"\\?\\>");
-		
-		Matcher cm = pcharset.matcher(xml);
-		String charset="UTF-8";
-		if(cm.find()){
-//			System.out.println("++++++++++++++++++"+cm.group(1));
-			charset=cm.group(1);
-		}
-		
-		Pattern pattern=Pattern.compile("<html[\\s\\S]+?>[\\s\\S]+?<\\/html>", Pattern.CASE_INSENSITIVE);
-		
-		Matcher match = pattern.matcher(xml);
-		if(match.find()){
-			result= match.group();
-			result=result.replaceAll("CHARSET=[^\"]+?\"", "charset=utf-8\"");
-			result=result.replaceAll("charset=[^\"]+?\"", "charset=utf-8\"");
-			result=result.replaceAll("charset=\"[^\"]+?\"", "charset=\"utf-8\"");
-			
-			result= new String( result.getBytes(),"UTF-8");
-			
-		}
+		result=html.asXml();
+
 		}catch (Exception e) {
 			e.printStackTrace();
 			return "error"+ e.toString();
