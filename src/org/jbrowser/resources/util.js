@@ -9,6 +9,34 @@ String.prototype.endWith=function(str){
   return reg.test(this);        
 }
 
+String.prototype.trim=function(){     
+  return this.replace(/(^\s*)|(\s*$)/g,""); 
+}
+
+function trim(str){
+	return str.trim();
+}
+
+String.prototype.trim_script=function(){     
+  return this.replace(/<script[^>]+?>[\s\S]+?<\/script>/g,""); 
+}
+
+function trim_script(str){
+	return str.trim_script();
+  
+}
+
+String.prototype.trim_style=function(){     
+  return this.replace(/<style[^>]+?>[\s\S]+?<\/style>/g,""); 
+}
+
+function trim_style(str){
+		return str.trim_style();
+	  
+}
+
+
+
 Function.prototype.heredoc = function(){
 	var doc = this.toString()
 	var m=doc.match(/\/\*([\s\S]+?)\*\//)
