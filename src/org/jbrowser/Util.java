@@ -240,6 +240,8 @@ public class Util {
 		String html =""+getHtml(url);
 		
 		html=trimScript(html);
+		
+		html= html+ "<script> var __www_url='"+url+"'; </script>";
 
 		writeFile.write(html.getBytes());
 		

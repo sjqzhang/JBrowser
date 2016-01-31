@@ -1,3 +1,22 @@
+
+String.prototype.startWith=function(str){     
+  var reg=new RegExp("^"+str);     
+  return reg.test(this);        
+}  
+
+String.prototype.endWith=function(str){     
+  var reg=new RegExp(str+"$");     
+  return reg.test(this);        
+}
+
+Function.prototype.heredoc = function(){
+	var doc = this.toString()
+	var m=doc.match(/\/\*([\s\S]+?)\*\//)
+	if(m.length>1){
+		return m[1];
+	}
+}
+
 function table_data(selector) {
 	var data = []
 	$('table tr', $(selector)).each(function() {
@@ -14,6 +33,59 @@ function table_data(selector) {
 function obj2json(data) {
 	return JSON.stringify(data)
 }
+
+
+function get_www_url(){
+	
+   var url= window.location.href
+   if(url.startWith('http')){
+	   return url;
+   } else {
+	   return __www_url;
+   }
+}
+
+
+
+function replace_all_url(url){
+	var surl= url.match(/(http(?:s)?:\/\/[^\/]+)\/?/)[1]
+	var rurl=url.substring(0,url.lastIndexOf('/'))
+	
+	$('a').each(function(){
+	   var href=''+ $(this).attr('href');
+	   if(href.startWith('/')){
+	      $(this).attr('href',surl+href)
+	   } else if(href.startWith('http://')||href.startWith('https://')){
+	
+	   } else {
+	     
+	     $(this).attr('href',rurl+'/'+href)
+	   }	
+	})
+
+}
+
+
+function replace_all_img(url){
+	var surl= url.match(/(http(?:s)?:\/\/[^\/]+)\/?/)[1]
+	var rurl=url.substring(0,url.lastIndexOf('/'))
+	
+	$('img').each(function(){
+	   var href=''+ $(this).attr('src');
+	   if(href.startWith('/')){
+	      $(this).attr('src',surl+href)
+	   } else if(href.startWith('http://')||href.startWith('https://')){
+	
+	   } else {
+	    
+	     $(this).attr('src',rurl+'/'+href)
+	   }	
+	})
+
+}
+
+replace_all_url(get_www_url());
+replace_all_img(get_www_url());
 
 function href_data(selector) {
 
